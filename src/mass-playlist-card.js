@@ -11,31 +11,261 @@
 const ROW_HEIGHT = 56;
 const GAP        = 8;
 
+const TRANSLATIONS = {
+  en: {
+    // Editor Labels
+    editor_speaker: 'Music Assistant speaker',
+    editor_content_type: 'Content type',
+    editor_sort_by: 'Sort by',
+    editor_cover_size: 'Cover size (grid columns)',
+    editor_manual_items: 'Manual items (drag to reorder)',
+
+    // Media Types
+    type_playlist: 'Playlists',
+    type_album: 'Albums',
+    type_artist: 'Artists',
+
+    // Order By
+    order_timestamp_added_desc: 'Date added (newest first)',
+    order_timestamp_added: 'Date added (oldest first)',
+    order_last_played_desc: 'Last played (newest first)',
+    order_last_played: 'Last played (oldest first)',
+    order_play_count_desc: 'Play count (highest first)',
+    order_play_count: 'Play count (lowest first)',
+    order_random: 'Random',
+    order_random_less_played: 'Random (least played)',
+    order_name: 'Name (A → Z)',
+    order_name_desc: 'Name (Z → A)',
+    order_sort_name: 'Sort name (A → Z)',
+    order_sort_name_desc: 'Sort name (Z → A)',
+    order_year_desc: 'Year (newest first)',
+    order_year: 'Year (oldest first)',
+    order_artist_name: 'Artist name (A → Z)',
+    order_artist_name_desc: 'Artist name (Z → A)',
+    order_manual: '— Manual —',
+
+    // Card State / Errors
+    state_loading: 'Loading…',
+    error_instance_not_found: 'Music Assistant instance not found. Check entity_id.',
+    error_loading_content: 'Error loading content',
+    state_no_items: 'No items found in library',
+
+    // Accessibility
+    aria_play: 'Play'
+  },
+  es: {
+    editor_speaker: 'Altavoz Music Assistant',
+    editor_content_type: 'Tipo de contenido',
+    editor_sort_by: 'Ordenar por',
+    editor_cover_size: 'Tamaño de portada (columnas de cuadrícula)',
+    editor_manual_items: 'Elementos manuales (arrastrar para reordenar)',
+
+    type_playlist: 'Listas de reproducción',
+    type_album: 'Álbumes',
+    type_artist: 'Artistas',
+
+    order_timestamp_added_desc: 'Fecha de adición (más reciente primero)',
+    order_timestamp_added: 'Fecha de adición (más antigua primero)',
+    order_last_played_desc: 'Última reproducción (más reciente primero)',
+    order_last_played: 'Última reproducción (más antigua primero)',
+    order_play_count_desc: 'Número de reproducciones (mayor a menor)',
+    order_play_count: 'Número de reproducciones (menor a mayor)',
+    order_random: 'Aleatorio',
+    order_random_less_played: 'Aleatorio (menos reproducido)',
+    order_name: 'Nombre (A → Z)',
+    order_name_desc: 'Nombre (Z → A)',
+    order_sort_name: 'Nombre de clasificación (A → Z)',
+    order_sort_name_desc: 'Nombre de clasificación (Z → A)',
+    order_year_desc: 'Año (más reciente primero)',
+    order_year: 'Año (más antiguo primero)',
+    order_artist_name: 'Nombre de artista (A → Z)',
+    order_artist_name_desc: 'Nombre de artista (Z → A)',
+    order_manual: '— Manual —',
+
+    state_loading: 'Cargando…',
+    error_instance_not_found: 'Instancia de Music Assistant no encontrada. Comprueba entity_id.',
+    error_loading_content: 'Error cargando contenido',
+    state_no_items: 'No se encontraron elementos en la biblioteca',
+
+    aria_play: 'Reproducir'
+  },
+  fr: {
+    editor_speaker: 'Haut-parleur Music Assistant',
+    editor_content_type: 'Type de contenu',
+    editor_sort_by: 'Trier par',
+    editor_cover_size: 'Taille de pochette (colonnes de grille)',
+    editor_manual_items: 'Éléments manuels (glisser pour réorganiser)',
+
+    type_playlist: 'Listes de lecture',
+    type_album: 'Albums',
+    type_artist: 'Artistes',
+
+    order_timestamp_added_desc: 'Date d\'ajout (plus récent d\'abord)',
+    order_timestamp_added: 'Date d\'ajout (plus ancien d\'abord)',
+    order_last_played_desc: 'Dernière lecture (plus récent d\'abord)',
+    order_last_played: 'Dernière lecture (plus ancien d\'abord)',
+    order_play_count_desc: 'Nombre de lectures (plus élevé d\'abord)',
+    order_play_count: 'Nombre de lectures (plus faible d\'abord)',
+    order_random: 'Aléatoire',
+    order_random_less_played: 'Aléatoire (le moins écouté)',
+    order_name: 'Nom (A → Z)',
+    order_name_desc: 'Nom (Z → A)',
+    order_sort_name: 'Nom de tri (A → Z)',
+    order_sort_name_desc: 'Nom de tri (Z → A)',
+    order_year_desc: 'Année (plus récent d\'abord)',
+    order_year: 'Année (plus ancien d\'abord)',
+    order_artist_name: 'Nom d\'artiste (A → Z)',
+    order_artist_name_desc: 'Nom d\'artiste (Z → A)',
+    order_manual: '— Manuel —',
+
+    state_loading: 'Chargement…',
+    error_instance_not_found: 'Instance Music Assistant introuvable. Vérifiez entity_id.',
+    error_loading_content: 'Erreur lors du chargement du contenu',
+    state_no_items: 'Aucun élément trouvé dans la bibliothèque',
+
+    aria_play: 'Lire'
+  },
+  de: {
+    editor_speaker: 'Music Assistant Lautsprecher',
+    editor_content_type: 'Inhaltstyp',
+    editor_sort_by: 'Sortieren nach',
+    editor_cover_size: 'Cover-Größe (Rasterspalten)',
+    editor_manual_items: 'Manuelle Elemente (zum Neuanordnen ziehen)',
+
+    type_playlist: 'Playlists',
+    type_album: 'Alben',
+    type_artist: 'Künstler',
+
+    order_timestamp_added_desc: 'Hinzugefügt am (Neueste zuerst)',
+    order_timestamp_added: 'Hinzugefügt am (Älteste zuerst)',
+    order_last_played_desc: 'Zuletzt gespielt (Neueste zuerst)',
+    order_last_played: 'Zuletzt gespielt (Älteste zuerst)',
+    order_play_count_desc: 'Wiedergabezahl (Höchste zuerst)',
+    order_play_count: 'Wiedergabezahl (Niedrigste zuerst)',
+    order_random: 'Zufällig',
+    order_random_less_played: 'Zufällig (Am wenigsten gespielt)',
+    order_name: 'Name (A → Z)',
+    order_name_desc: 'Name (Z → A)',
+    order_sort_name: 'Sortiername (A → Z)',
+    order_sort_name_desc: 'Sortiername (Z → A)',
+    order_year_desc: 'Jahr (Neueste zuerst)',
+    order_year: 'Jahr (Älteste zuerst)',
+    order_artist_name: 'Künstlername (A → Z)',
+    order_artist_name_desc: 'Künstlername (Z → A)',
+    order_manual: '— Manuell —',
+
+    state_loading: 'Laden…',
+    error_instance_not_found: 'Music Assistant-Instanz nicht gefunden. Überprüfen Sie entity_id.',
+    error_loading_content: 'Fehler beim Laden des Inhalts',
+    state_no_items: 'Keine Elemente in der Bibliothek gefunden',
+
+    aria_play: 'Abspielen'
+  },
+  it: {
+    editor_speaker: 'Altoparlante Music Assistant',
+    editor_content_type: 'Tipo di contenuto',
+    editor_sort_by: 'Ordina per',
+    editor_cover_size: 'Dimensione copertina (colonne griglia)',
+    editor_manual_items: 'Elementi manuali (trascina per riordinare)',
+
+    type_playlist: 'Playlist',
+    type_album: 'Album',
+    type_artist: 'Artisti',
+
+    order_timestamp_added_desc: 'Data di aggiunta (dal più recente)',
+    order_timestamp_added: 'Data di aggiunta (dal più vecchio)',
+    order_last_played_desc: 'Ultima riproduzione (dal più recente)',
+    order_last_played: 'Ultima riproduzione (dal più vecchio)',
+    order_play_count_desc: 'Numero di riproduzioni (decrescente)',
+    order_play_count: 'Numero di riproduzioni (crescente)',
+    order_random: 'Casuale',
+    order_random_less_played: 'Casuale (meno riprodotti)',
+    order_name: 'Nome (A → Z)',
+    order_name_desc: 'Nome (Z → A)',
+    order_sort_name: 'Nome ordinamento (A → Z)',
+    order_sort_name_desc: 'Nome ordinamento (Z → A)',
+    order_year_desc: 'Anno (dal più recente)',
+    order_year: 'Anno (dal più vecchio)',
+    order_artist_name: 'Nome artista (A → Z)',
+    order_artist_name_desc: 'Nome artista (Z → A)',
+    order_manual: '— Manuale —',
+
+    state_loading: 'Caricamento…',
+    error_instance_not_found: 'Istanza Music Assistant non trovata. Controlla entity_id.',
+    error_loading_content: 'Errore durante il caricamento dei contenuti',
+    state_no_items: 'Nessun elemento trovato nella libreria',
+
+    aria_play: 'Riproduci'
+  },
+  pt: {
+    editor_speaker: 'Alto-falante Music Assistant',
+    editor_content_type: 'Tipo de conteúdo',
+    editor_sort_by: 'Ordenar por',
+    editor_cover_size: 'Tamanho da capa (colunas da grade)',
+    editor_manual_items: 'Itens manuais (arraste para reordenar)',
+
+    type_playlist: 'Playlists',
+    type_album: 'Álbuns',
+    type_artist: 'Artistas',
+
+    order_timestamp_added_desc: 'Data de adição (mais recente primeiro)',
+    order_timestamp_added: 'Data de adição (mais antiga primeiro)',
+    order_last_played_desc: 'Última reprodução (mais recente primeiro)',
+    order_last_played: 'Última reprodução (mais antiga primeiro)',
+    order_play_count_desc: 'Contagem de reprodução (maior primeiro)',
+    order_play_count: 'Contagem de reprodução (menor primeiro)',
+    order_random: 'Aleatório',
+    order_random_less_played: 'Aleatório (menos tocado)',
+    order_name: 'Nome (A → Z)',
+    order_name_desc: 'Nome (Z → A)',
+    order_sort_name: 'Nome de ordenação (A → Z)',
+    order_sort_name_desc: 'Nome de ordenação (Z → A)',
+    order_year_desc: 'Ano (mais recente primeiro)',
+    order_year: 'Ano (mais antigo primeiro)',
+    order_artist_name: 'Nome do artista (A → Z)',
+    order_artist_name_desc: 'Nome do artista (Z → A)',
+    order_manual: '— Manual —',
+
+    state_loading: 'A carregar…',
+    error_instance_not_found: 'Instância do Music Assistant não encontrada. Verifique entity_id.',
+    error_loading_content: 'Erro ao carregar conteúdo',
+    state_no_items: 'Nenhum item encontrado na biblioteca',
+
+    aria_play: 'Reproduzir'
+  }
+};
+
+function localize(key, lang = 'en') {
+  const shortLang = String(lang).split('-')[0].toLowerCase();
+  const translations = TRANSLATIONS[shortLang] || TRANSLATIONS['en'];
+  return translations[key] || TRANSLATIONS['en'][key] || key;
+}
+
 const MEDIA_TYPES = [
-  { value: 'playlist', label: 'Playlists' },
-  { value: 'album',    label: 'Albums'    },
-  { value: 'artist',   label: 'Artists'   },
+  { value: 'playlist', labelKey: 'type_playlist' },
+  { value: 'album',    labelKey: 'type_album'    },
+  { value: 'artist',   labelKey: 'type_artist'   },
 ];
 
 // order_by values exposed by Music Assistant
 const ORDER_BY_OPTIONS = [
-  { value: 'timestamp_added_desc', label: 'Date added (newest first)'        },
-  { value: 'timestamp_added',      label: 'Date added (oldest first)'        },
-  { value: 'last_played_desc',     label: 'Last played (newest first)'       },
-  { value: 'last_played',          label: 'Last played (oldest first)'       },
-  { value: 'play_count_desc',      label: 'Play count (highest first)'       },
-  { value: 'play_count',           label: 'Play count (lowest first)'        },
-  { value: 'random',               label: 'Random'                           },
-  { value: 'random_less_played',   label: 'Random (least played)'            },
-  { value: 'name',                 label: 'Name (A → Z)'                    },
-  { value: 'name_desc',            label: 'Name (Z → A)'                    },
-  { value: 'sort_name',            label: 'Sort name (A → Z)'               },
-  { value: 'sort_name_desc',       label: 'Sort name (Z → A)'               },
-  { value: 'year_desc',            label: 'Year (newest first)'              },
-  { value: 'year',                 label: 'Year (oldest first)'              },
-  { value: 'artist_name',          label: 'Artist name (A → Z)'             },
-  { value: 'artist_name_desc',     label: 'Artist name (Z → A)'             },
-  { value: 'manual',               label: '— Manual —'                       },
+  { value: 'timestamp_added_desc', labelKey: 'order_timestamp_added_desc' },
+  { value: 'timestamp_added',      labelKey: 'order_timestamp_added'      },
+  { value: 'last_played_desc',     labelKey: 'order_last_played_desc'     },
+  { value: 'last_played',          labelKey: 'order_last_played'          },
+  { value: 'play_count_desc',      labelKey: 'order_play_count_desc'      },
+  { value: 'play_count',           labelKey: 'order_play_count'           },
+  { value: 'random',               labelKey: 'order_random'               },
+  { value: 'random_less_played',   labelKey: 'order_random_less_played'   },
+  { value: 'name',                 labelKey: 'order_name'                 },
+  { value: 'name_desc',            labelKey: 'order_name_desc'            },
+  { value: 'sort_name',            labelKey: 'order_sort_name'            },
+  { value: 'sort_name_desc',       labelKey: 'order_sort_name_desc'       },
+  { value: 'year_desc',            labelKey: 'order_year_desc'            },
+  { value: 'year',                 labelKey: 'order_year'                 },
+  { value: 'artist_name',          labelKey: 'order_artist_name'          },
+  { value: 'artist_name_desc',     labelKey: 'order_artist_name_desc'     },
+  { value: 'manual',               labelKey: 'order_manual'               },
 ];
 
 const MANUAL_SLOTS = 12;
@@ -52,8 +282,12 @@ class MassPlaylistCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
+    const oldLang = this._hass?.language;
     this._hass = hass;
     this.shadowRoot.querySelectorAll('ha-entity-picker').forEach(p => p.hass = hass);
+    if (this._hass?.language !== oldLang) {
+      this._renderEditor();
+    }
   }
 
   setConfig(config) {
@@ -77,6 +311,7 @@ class MassPlaylistCardEditor extends HTMLElement {
   _renderEditor() {
     const shadow   = this.shadowRoot;
     const isManual = this._config.order_by === 'manual';
+    const lang     = this._hass?.language || 'en';
 
     shadow.innerHTML = `
       <style>
@@ -178,7 +413,7 @@ class MassPlaylistCardEditor extends HTMLElement {
       <div id="form-host"></div>
 
       ${isManual ? `
-        <div class="section-title">Manual items (drag to reorder)</div>
+        <div class="section-title">${localize('editor_manual_items', lang)}</div>
         <div class="manual-list" id="manual-list">
           ${Array.from({ length: MANUAL_SLOTS }, (_, i) => {
             const uri = this._config.manual_items?.[i] ?? '';
@@ -209,32 +444,32 @@ class MassPlaylistCardEditor extends HTMLElement {
       {
         name:     'entity_id',
         required: true,
-        label:    'Music Assistant speaker',
+        label:    localize('editor_speaker', lang),
         selector: { entity: { domain: 'media_player', integration: 'music_assistant' } },
       },
       {
         name:  'media_type',
-        label: 'Content type',
+        label: localize('editor_content_type', lang),
         selector: {
           select: {
-            options: MEDIA_TYPES.map(t => ({ value: t.value, label: t.label })),
+            options: MEDIA_TYPES.map(t => ({ value: t.value, label: localize(t.labelKey, lang) })),
             mode:    'dropdown',
           },
         },
       },
       {
         name:  'order_by',
-        label: 'Sort by',
+        label: localize('editor_sort_by', lang),
         selector: {
           select: {
-            options: ORDER_BY_OPTIONS.map(o => ({ value: o.value, label: o.label })),
+            options: ORDER_BY_OPTIONS.map(o => ({ value: o.value, label: localize(o.labelKey, lang) })),
             mode:    'dropdown',
           },
         },
       },
       {
         name:  'item_size',
-        label: 'Cover size (grid columns)',
+        label: localize('editor_cover_size', lang),
         selector: { number: { min: 1, max: 12, step: 1, mode: 'box' } },
       },
     ];
@@ -346,9 +581,15 @@ class MassPlaylistCard extends HTMLElement {
   }
 
   set hass(hass) {
+    const oldLang = this._hass?.language;
     const first = !this._hass;
     this._hass  = hass;
-    if (first) { this._render(); this._fetchItems(); }
+    if (first) {
+      this._render();
+      this._fetchItems();
+    } else if (this._hass?.language !== oldLang && this._rendered) {
+      this._updateGrid();
+    }
   }
 
   connectedCallback() {
@@ -383,7 +624,7 @@ class MassPlaylistCard extends HTMLElement {
 
     const configEntryId = this._config.config_entry_id || await this._getConfigEntryId();
     if (!configEntryId) {
-      this._error   = 'Music Assistant instance not found. Check entity_id.';
+      this._error   = localize('error_instance_not_found', this._hass?.language);
       this._loading = false;
       this._updateGrid();
       return;
@@ -406,7 +647,7 @@ class MassPlaylistCard extends HTMLElement {
       const data  = result?.response ?? result;
       this._items = data?.items || (Array.isArray(data) ? data : []);
     } catch (err) {
-      this._error = err.message || 'Error loading content';
+      this._error = err.message || localize('error_loading_content', this._hass?.language);
     }
 
     this._loading = false;
@@ -428,7 +669,7 @@ class MassPlaylistCard extends HTMLElement {
 
     const configEntryId = this._config.config_entry_id || await this._getConfigEntryId();
     if (!configEntryId) {
-      this._error   = 'Music Assistant instance not found. Check entity_id.';
+      this._error   = localize('error_instance_not_found', this._hass?.language);
       this._loading = false;
       this._updateGrid();
       return;
@@ -608,8 +849,10 @@ class MassPlaylistCard extends HTMLElement {
     const root = this.shadowRoot.getElementById('root');
     if (!root) return;
 
+    const lang = this._hass?.language || 'en';
+
     if (this._loading) {
-      root.innerHTML = `<div class="state"><div class="loader"></div>Loading…</div>`;
+      root.innerHTML = `<div class="state"><div class="loader"></div>${localize('state_loading', lang)}</div>`;
       return;
     }
     if (this._error) {
@@ -617,7 +860,7 @@ class MassPlaylistCard extends HTMLElement {
       return;
     }
     if (!this._items.length) {
-      root.innerHTML = `<div class="state">No items found in library</div>`;
+      root.innerHTML = `<div class="state">${localize('state_no_items', lang)}</div>`;
       return;
     }
 
@@ -640,7 +883,7 @@ class MassPlaylistCard extends HTMLElement {
       el.className = 'item';
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', `Play ${name}`);
+      el.setAttribute('aria-label', `${localize('aria_play', lang)} ${name}`);
       el.title = name;
 
       if (imgUrl) {
