@@ -16,12 +16,12 @@ A Lovelace custom card for the **Sections** view of Home Assistant that displays
 
 ## Features
 
-🎵 **Playlists, albums or artists** — choose what you want to browse
-🔊 **Pick your speaker** — any Music Assistant media player in your home
-🎛️ **Sort your way** — 16 options: recently added, last played, most played, random, alphabetical…
-📌 **Manual mode** — pin exactly the covers you want, drag to reorder
-🎨 **Fits your theme** — 100% aligned with your Home Assistant visual style
-⚡ **Built for Sections** — the grid adapts automatically to any card size
+- 🎵 **Playlists, albums or artists** — choose what you want to browse
+- 🔊 **Pick your speaker** — any Music Assistant media player in your home
+- 🎛️ **Sort your way** — 16 options: recently added, last played, most played, random, alphabetical…
+- 📌 **Manual mode** — pin exactly the covers you want, drag to reorder
+- 🎨 **Fits your theme** — 100% aligned with your Home Assistant visual style
+- ⚡ **Built for Sections** — the grid adapts automatically to any card size
 
 One tap. The right vibe.
 
