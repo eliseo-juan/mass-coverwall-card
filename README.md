@@ -193,16 +193,6 @@ manual_items:
 
 ---
 
-## Sections view tips
-
-The card implements `getGridOptions()` with a default of **12 columns × 2 rows** and a minimum of **3 columns**. This means:
-
-- Drag the card to span the full width (12 cols) for maximum covers.
-- Adjust `item_size` to control how many covers fit per row — e.g. `item_size: 3` gives 4 covers per row on a full-width card.
-- The card adapts dynamically if you resize it.
-
----
-
 ## License
 
 [MIT](LICENSE) © eliseo-juan
