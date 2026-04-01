@@ -448,31 +448,27 @@ class MassPlaylistCard extends HTMLElement {
       return;
     }
 
-    // Resolve each URI via MA search (exact URI match returns the item)
-    const resolved = [];
-    for (const uri of uris) {
-      try {
-        const result = await this._hass.callWS({
-          type:         'call_service',
-          domain:       'music_assistant',
-          service:      'search',
-          service_data: {
-            config_entry_id: configEntryId,
-            name:            uri,
-            media_type:      [this._config.media_type || 'playlist'],
-            library_only:    true,
-            limit:           1,
-          },
-          return_response: true,
-        });
-        const data  = result?.response ?? result;
-        const key   = `${this._config.media_type || 'playlist'}s`; // playlists | albums | artists
-        const items = data?.[key] ?? [];
-        if (items.length) resolved.push(items[0]);
-      } catch (_) { /* skip unresolvable URI */ }
+    // Fetch the full library and match by URI to preserve manual order
+    try {
+      const result = await this._hass.callWS({
+        type:         'call_service',
+        domain:       'music_assistant',
+        service:      'get_library',
+        service_data: {
+          config_entry_id: configEntryId,
+          media_type:      this._config.media_type || 'playlist',
+          limit:           500,
+          offset:          0,
+        },
+        return_response: true,
+      });
+      const data     = result?.response ?? result;
+      const allItems = data?.items || (Array.isArray(data) ? data : []);
+      const byUri    = Object.fromEntries(allItems.map(item => [item.uri, item]));
+      this._items    = uris.map(uri => byUri[uri]).filter(Boolean);
+    } catch (err) {
+      this._error = err.message || 'Error loading manual items';
     }
-
-    this._items   = resolved;
     this._loading = false;
     this._updateGrid();
   }
