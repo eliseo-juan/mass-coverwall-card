@@ -42,6 +42,34 @@ const ORDER_BY_OPTIONS = [
 
 const MANUAL_SLOTS = 12;
 
+// ─── Exported utility functions ───────────────────────────────────────────────
+
+export function calcCols(w, itemSize) {
+  const itemCols = Math.max(1, parseInt(itemSize) || 3);
+  const colW     = (w - 11 * GAP) / 12;
+  const itemW    = itemCols * colW + (itemCols - 1) * GAP;
+  return Math.max(1, Math.floor((w + GAP) / (itemW + GAP)));
+}
+
+export function calcRows(w, h, itemSize) {
+  if (!h || h < ROW_HEIGHT) return 1;
+  const itemCols = Math.max(1, parseInt(itemSize) || 3);
+  const colW     = (w - 11 * GAP) / 12;
+  const itemW    = itemCols * colW + (itemCols - 1) * GAP;
+  return Math.max(1, Math.floor((h + GAP) / (itemW + GAP)));
+}
+
+export function getImageUrl(item, hassUrl) {
+  const raw = item?.metadata?.images?.[0]?.url
+    || item?.image?.url || item?.image || item?.thumbnail || null;
+  if (!raw) return null;
+  if (raw.startsWith('http')) return raw;
+  return `${hassUrl}/api/music_assistant/image_proxy?url=${encodeURIComponent(raw)}`;
+}
+
+export function getUri(item)  { return item?.uri  || item?.item_id || ''; }
+export function getName(item) { return item?.name || item?.title   || ''; }
+
 // ─── Editor ───────────────────────────────────────────────────────────────────
 
 class MassPlaylistCardEditor extends HTMLElement {
@@ -475,34 +503,14 @@ class MassPlaylistCard extends HTMLElement {
 
   // ─── Layout ───────────────────────────────────────────────────────────────
 
-  _calcCols(w) {
-    const itemCols = Math.max(1, parseInt(this._config.item_size) || 3);
-    const colW     = (w - 11 * GAP) / 12;
-    const itemW    = itemCols * colW + (itemCols - 1) * GAP;
-    return Math.max(1, Math.floor((w + GAP) / (itemW + GAP)));
-  }
-
-  _calcRows(w, h) {
-    if (!h || h < ROW_HEIGHT) return 1;
-    const itemCols = Math.max(1, parseInt(this._config.item_size) || 3);
-    const colW     = (w - 11 * GAP) / 12;
-    const itemW    = itemCols * colW + (itemCols - 1) * GAP;
-    return Math.max(1, Math.floor((h + GAP) / (itemW + GAP)));
-  }
+  _calcCols(w)       { return calcCols(w, this._config.item_size); }
+  _calcRows(w, h)    { return calcRows(w, h, this._config.item_size); }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  _getImageUrl(item) {
-    const raw = item?.metadata?.images?.[0]?.url
-      || item?.image?.url || item?.image || item?.thumbnail || null;
-    if (!raw) return null;
-    if (raw.startsWith('http')) return raw;
-    const hassUrl = this._hass?.auth?.data?.hassUrl || '';
-    return `${hassUrl}/api/music_assistant/image_proxy?url=${encodeURIComponent(raw)}`;
-  }
-
-  _getUri(item)  { return item?.uri || item?.item_id || ''; }
-  _getName(item) { return item?.name || item?.title  || ''; }
+  _getImageUrl(item) { return getImageUrl(item, this._hass?.auth?.data?.hassUrl || ''); }
+  _getUri(item)      { return getUri(item); }
+  _getName(item)     { return getName(item); }
 
   async _play(item) {
     const uri = this._getUri(item);
