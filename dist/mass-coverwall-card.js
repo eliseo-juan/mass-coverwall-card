@@ -698,7 +698,7 @@ class MassPlaylistCard extends HTMLElement {
           config_entry_id: configEntryId,
           media_type:      this._config.media_type || 'playlist',
           order_by:        this._config.order_by,
-          limit:           128,
+          limit:           this._getVisibleCount(),
           offset:          0,
         },
         return_response: true,
@@ -763,6 +763,15 @@ class MassPlaylistCard extends HTMLElement {
 
   _calcCols(w)       { return calcCols(w, this._config.item_size); }
   _calcRows(w, h)    { return calcRows(w, h, this._config.item_size); }
+
+  _getVisibleCount() {
+    const w          = this._containerW || this.offsetWidth  || 300;
+    const h          = this._containerH || this.offsetHeight || (2 * ROW_HEIGHT + GAP);
+    const cols       = this._calcCols(w);
+    const configRows = this._config.rows ? Math.max(1, parseInt(this._config.rows)) : null;
+    const rows       = configRows ?? this._calcRows(w, h);
+    return cols * rows;
+  }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -858,9 +867,20 @@ class MassPlaylistCard extends HTMLElement {
         font-size: 13px; font-family: var(--primary-font-family, inherit); text-align: center;
       }
 
-      .loader { width: 100%; max-width: 120px; height: 2px; border-radius: 1px; background: var(--divider-color, rgba(255,255,255,0.12)); overflow: hidden; }
-      .loader::after { content: ''; display: block; width: 40%; height: 100%; background: var(--primary-color, #03a9f4); border-radius: 1px; animation: slide 1.1s ease-in-out infinite; }
-      @keyframes slide { 0% { transform: translateX(-150%); } 100% { transform: translateX(500%); } }
+      .skeleton {
+        background: linear-gradient(
+          135deg,
+          var(--card-background-color, #1c1c1e) 25%,
+          var(--secondary-background-color, rgba(255,255,255,0.07)) 50%,
+          var(--card-background-color, #1c1c1e) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
     `;
 
     this.shadowRoot.appendChild(style);
@@ -891,8 +911,32 @@ class MassPlaylistCard extends HTMLElement {
 
     const lang = this._hass?.language || 'en';
 
+    const w          = this._containerW || this.offsetWidth  || 300;
+    const h          = this._containerH || this.offsetHeight || (2 * ROW_HEIGHT + GAP);
+    const cols       = this._calcCols(w);
+    const configRows = this._config.rows ? Math.max(1, parseInt(this._config.rows)) : null;
+    const rows       = configRows ?? this._calcRows(w, h);
+
+    // In Masonry (or any layout without a fixed parent height), set the host
+    // height explicitly so the card expands to show all requested rows.
+    if (configRows) {
+      const itemW = calcItemWidth(w, this._config.item_size);
+      this.style.height = `${Math.round(rows * itemW + (rows - 1) * GAP)}px`;
+    } else {
+      this.style.height = '';
+    }
+
     if (this._loading) {
-      root.innerHTML = `<div class="state"><div class="loader"></div>${localize('state_loading', lang)}</div>`;
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      grid.style.setProperty('--pl-cols', String(cols));
+      grid.style.setProperty('--pl-rows', String(rows));
+      for (let i = 0; i < cols * rows; i++) {
+        const el = document.createElement('div');
+        el.className = 'item skeleton';
+        grid.appendChild(el);
+      }
+      root.replaceChildren(grid);
       return;
     }
     if (this._error) {
@@ -904,21 +948,7 @@ class MassPlaylistCard extends HTMLElement {
       return;
     }
 
-    const w          = this._containerW || this.offsetWidth  || 300;
-    const h          = this._containerH || this.offsetHeight || (2 * ROW_HEIGHT + GAP);
-    const cols       = this._calcCols(w);
-    const configRows = this._config.rows ? Math.max(1, parseInt(this._config.rows)) : null;
-    const rows       = configRows ?? this._calcRows(w, h);
-    const items      = this._items.slice(0, cols * rows);
-
-    // In Masonry (or any layout without a fixed parent height), set the host
-    // height explicitly so the card expands to show all requested rows.
-    if (configRows) {
-      const itemW = calcItemWidth(w, this._config.item_size);
-      this.style.height = `${Math.round(rows * itemW + (rows - 1) * GAP)}px`;
-    } else {
-      this.style.height = '';
-    }
+    const items = this._items.slice(0, cols * rows);
 
     const grid = document.createElement('div');
     grid.className = 'grid';
