@@ -15,7 +15,8 @@ const TRANSLATIONS = {
     editor_speaker:       'Speakers',
     editor_content_type:  'Content type',
     editor_sort_by:       'Sort by',
-    editor_cover_size:    'Cover size (grid columns) 🔥',
+    editor_cover_size:    'Cover size (grid columns)',
+    editor_rows:          'Number of rows',
     editor_manual_items:        'Manual items (drag to reorder)',
 
     type_playlist:        'Playlists',
@@ -49,6 +50,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo de contenido',
     editor_sort_by:       'Ordenar por',
     editor_cover_size:    'Tamaño de portada (columnas de cuadrícula)',
+    editor_rows:          'Número de filas',
     editor_manual_items:        'Elementos manuales (arrastrar para reordenar)',
 
     type_playlist:        'Listas de reproducción',
@@ -82,6 +84,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Type de contenu',
     editor_sort_by:       'Trier par',
     editor_cover_size:    'Taille de pochette (colonnes de grille)',
+    editor_rows:          'Nombre de lignes',
     editor_manual_items:        'Éléments manuels (glisser pour réorganiser)',
 
     type_playlist:        'Listes de lecture',
@@ -115,6 +118,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Inhaltstyp',
     editor_sort_by:       'Sortieren nach',
     editor_cover_size:    'Cover-Größe (Rasterspalten)',
+    editor_rows:          'Anzahl Zeilen',
     editor_manual_items:        'Manuelle Elemente (zum Neuanordnen ziehen)',
 
     type_playlist:        'Playlists',
@@ -148,6 +152,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo di contenuto',
     editor_sort_by:       'Ordina per',
     editor_cover_size:    'Dimensione copertina (colonne griglia)',
+    editor_rows:          'Numero di righe',
     editor_manual_items:        'Elementi manuali (trascina per riordinare)',
 
     type_playlist:        'Playlist',
@@ -181,6 +186,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo de conteúdo',
     editor_sort_by:       'Ordenar por',
     editor_cover_size:    'Tamanho da capa (colunas da grade)',
+    editor_rows:          'Número de linhas',
     editor_manual_items:        'Itens manuais (arraste para reordenar)',
 
     type_playlist:        'Playlists',
@@ -219,6 +225,21 @@ function localize(key, lang = 'en') {
 
 const ROW_HEIGHT = 56;
 const GAP        = 8;
+
+// Detected by the card in connectedCallback, read by the editor.
+// 'sections' | 'masonry' | 'unknown'
+let _lastDetectedLayout = 'unknown';
+
+function detectLayout(el) {
+  let node = el;
+  while (node) {
+    const tag = node.tagName?.toLowerCase();
+    if (tag === 'hui-section')      return 'sections';
+    if (tag === 'hui-masonry-view') return 'masonry';
+    node = node.parentElement ?? node.getRootNode()?.host;
+  }
+  return 'unknown';
+}
 
 const MEDIA_TYPES = [
   { value: 'playlist', labelKey: 'type_playlist' },
@@ -264,6 +285,12 @@ export function calcRows(w, h, itemSize) {
   const colW     = (w - 11 * GAP) / 12;
   const itemW    = itemCols * colW + (itemCols - 1) * GAP;
   return Math.max(1, Math.floor((h + GAP) / (itemW + GAP)));
+}
+
+export function calcItemWidth(w, itemSize) {
+  const itemCols = Math.max(1, parseInt(itemSize) || 3);
+  const colW     = (w - 11 * GAP) / 12;
+  return itemCols * colW + (itemCols - 1) * GAP;
 }
 
 export function getImageUrl(item, hassUrl) {
@@ -483,6 +510,11 @@ class MassPlaylistCardEditor extends HTMLElement {
         label: localize('editor_cover_size', lang),
         selector: { number: { min: 1, max: 12, step: 1, mode: 'box' } },
       },
+      ...(_lastDetectedLayout !== 'sections' ? [{
+        name:  'rows',
+        label: localize('editor_rows', lang),
+        selector: { number: { min: 1, max: 20, step: 1, mode: 'box' } },
+      }] : []),
     ];
     form.data = { ...this._config };
     form.computeLabel = (s) => s.label ?? s.name;
@@ -618,6 +650,7 @@ class MassPlaylistCard extends HTMLElement {
   }
 
   connectedCallback() {
+    _lastDetectedLayout = detectLayout(this);
     if (this._hass && !this._rendered) { this._render(); this._fetchItems(); }
   }
 
@@ -871,11 +904,21 @@ class MassPlaylistCard extends HTMLElement {
       return;
     }
 
-    const w     = this._containerW || this.offsetWidth  || 300;
-    const h     = this._containerH || this.offsetHeight || (2 * ROW_HEIGHT + GAP);
-    const cols  = this._calcCols(w);
-    const rows  = this._calcRows(w, h);
-    const items = this._items.slice(0, cols * rows);
+    const w          = this._containerW || this.offsetWidth  || 300;
+    const h          = this._containerH || this.offsetHeight || (2 * ROW_HEIGHT + GAP);
+    const cols       = this._calcCols(w);
+    const configRows = this._config.rows ? Math.max(1, parseInt(this._config.rows)) : null;
+    const rows       = configRows ?? this._calcRows(w, h);
+    const items      = this._items.slice(0, cols * rows);
+
+    // In Masonry (or any layout without a fixed parent height), set the host
+    // height explicitly so the card expands to show all requested rows.
+    if (configRows) {
+      const itemW = calcItemWidth(w, this._config.item_size);
+      this.style.height = `${Math.round(rows * itemW + (rows - 1) * GAP)}px`;
+    } else {
+      this.style.height = '';
+    }
 
     const grid = document.createElement('div');
     grid.className = 'grid';
