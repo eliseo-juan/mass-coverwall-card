@@ -16,7 +16,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Content type',
     editor_sort_by:       'Sort by',
     editor_cover_size:    'Cover size (grid columns)',
-    editor_rows:          'Rows (leave empty for Sections auto-fit)',
+    editor_rows:          'Number of rows',
     editor_manual_items:        'Manual items (drag to reorder)',
 
     type_playlist:        'Playlists',
@@ -50,7 +50,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo de contenido',
     editor_sort_by:       'Ordenar por',
     editor_cover_size:    'Tamaño de portada (columnas de cuadrícula)',
-    editor_rows:          'Filas (vacío = ajuste automático en Sections)',
+    editor_rows:          'Número de filas',
     editor_manual_items:        'Elementos manuales (arrastrar para reordenar)',
 
     type_playlist:        'Listas de reproducción',
@@ -84,7 +84,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Type de contenu',
     editor_sort_by:       'Trier par',
     editor_cover_size:    'Taille de pochette (colonnes de grille)',
-    editor_rows:          'Lignes (vide = ajustement auto en Sections)',
+    editor_rows:          'Nombre de lignes',
     editor_manual_items:        'Éléments manuels (glisser pour réorganiser)',
 
     type_playlist:        'Listes de lecture',
@@ -118,7 +118,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Inhaltstyp',
     editor_sort_by:       'Sortieren nach',
     editor_cover_size:    'Cover-Größe (Rasterspalten)',
-    editor_rows:          'Zeilen (leer = automatisch in Sections)',
+    editor_rows:          'Anzahl Zeilen',
     editor_manual_items:        'Manuelle Elemente (zum Neuanordnen ziehen)',
 
     type_playlist:        'Playlists',
@@ -152,7 +152,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo di contenuto',
     editor_sort_by:       'Ordina per',
     editor_cover_size:    'Dimensione copertina (colonne griglia)',
-    editor_rows:          'Righe (vuoto = adattamento automatico in Sections)',
+    editor_rows:          'Numero di righe',
     editor_manual_items:        'Elementi manuali (trascina per riordinare)',
 
     type_playlist:        'Playlist',
@@ -186,7 +186,7 @@ const TRANSLATIONS = {
     editor_content_type:  'Tipo de conteúdo',
     editor_sort_by:       'Ordenar por',
     editor_cover_size:    'Tamanho da capa (colunas da grade)',
-    editor_rows:          'Linhas (vazio = ajuste automático em Sections)',
+    editor_rows:          'Número de linhas',
     editor_manual_items:        'Itens manuais (arraste para reordenar)',
 
     type_playlist:        'Playlists',
@@ -225,6 +225,21 @@ function localize(key, lang = 'en') {
 
 const ROW_HEIGHT = 56;
 const GAP        = 8;
+
+// Detected by the card in connectedCallback, read by the editor.
+// 'sections' | 'masonry' | 'unknown'
+let _lastDetectedLayout = 'unknown';
+
+function detectLayout(el) {
+  let node = el;
+  while (node) {
+    const tag = node.tagName?.toLowerCase();
+    if (tag === 'hui-section')      return 'sections';
+    if (tag === 'hui-masonry-view') return 'masonry';
+    node = node.parentElement ?? node.getRootNode()?.host;
+  }
+  return 'unknown';
+}
 
 const MEDIA_TYPES = [
   { value: 'playlist', labelKey: 'type_playlist' },
@@ -495,11 +510,11 @@ class MassPlaylistCardEditor extends HTMLElement {
         label: localize('editor_cover_size', lang),
         selector: { number: { min: 1, max: 12, step: 1, mode: 'box' } },
       },
-      {
+      ...(_lastDetectedLayout !== 'sections' ? [{
         name:  'rows',
         label: localize('editor_rows', lang),
         selector: { number: { min: 1, max: 20, step: 1, mode: 'box' } },
-      },
+      }] : []),
     ];
     form.data = { ...this._config };
     form.computeLabel = (s) => s.label ?? s.name;
@@ -635,6 +650,7 @@ class MassPlaylistCard extends HTMLElement {
   }
 
   connectedCallback() {
+    _lastDetectedLayout = detectLayout(this);
     if (this._hass && !this._rendered) { this._render(); this._fetchItems(); }
   }
 
