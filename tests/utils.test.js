@@ -5,7 +5,7 @@ import {
   getImageUrl,
   getUri,
   getName,
-} from '../dist/mass-coverwall-card.js';
+} from '../src/utils.js';
 
 // ROW_HEIGHT matches the constant in the card implementation
 const ROW_HEIGHT = 56;
